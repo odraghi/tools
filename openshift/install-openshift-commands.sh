@@ -35,7 +35,7 @@ CLUSTER_FQDN=${CLUSTER_FQDN:-dmo-ocp.sfr-sh.net}
 install_tool https://hyperconverged-cluster-cli-download-openshift-cnv.apps.${CLUSTER_FQDN}/amd64/linux/virtctl.tar.gz --no-check-certificate
 
 [ -f /etc/redhat-release ] && dnf install -y bash-completion
-[ -f /etc/debian_version ] && yum install -y bash-completion
+[ -f /etc/debian_version ] && apt install -y bash-completion
 
 oc completion bash > /etc/bash_completion.d/openshift-oc
 kubectl completion bash > /etc/bash_completion.d/openshift-kubectl
