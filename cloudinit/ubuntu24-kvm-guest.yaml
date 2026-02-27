@@ -1,0 +1,20 @@
+#cloud-config
+user: ubuntu
+password: ${CLOUD_USER_PASSWORD}
+chpasswd: { expire: False }
+package_update: true
+package_upgrade: true
+packages:
+- qemu-guest-agent
+- qemu-utils
+- console-data
+- bat
+- jq
+- yq
+- fio
+- iperf3
+runcmd: 
+- systemctl enable qemu-guest-agent
+- systemctl start qemu-guest-agent
+- sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="vga=871"/' /etc/default/grub
+- update-grub
