@@ -1,0 +1,21 @@
+"""
+"""INFO: Comment char is double quotes
+"""
+
+"""Light Themes:
+"colo zellner
+"colo delek
+
+""" Dark Themes:
+"colo torte
+"colo industry
+"colo elflord
+"colo koehler
+
+""" Dark Pastel Themes:
+colo default "This is not the real Vim Default
+"colo slate
+"colo evening
+"colo desert
+"colo habamax
+"colo lunaperche
