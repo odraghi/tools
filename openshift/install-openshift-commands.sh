@@ -39,3 +39,11 @@ install_tool https://hyperconverged-cluster-cli-download-openshift-cnv.apps.${CL
 
 oc completion bash > /etc/bash_completion.d/openshift-oc
 kubectl completion bash > /etc/bash_completion.d/openshift-kubectl
+
+echo "INFO: oc version"
+oc version --client=true
+
+echo "---------------"
+
+echo "INFO: kubectl version"
+kubectl version --client=true
