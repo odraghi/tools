@@ -1,20 +1,40 @@
 """
-"""INFO: Comment char is double quotes
+""" INFO: Comment char is double quotes
 """
 
-"""Light Themes:
+
+""" Directory of colo (Themes) /usr/share/vim/vim91/color
+""" Blue Themes:
+"colo blue
+"colo darkblue
+
+""" Light Themes:
+"colo shine
 "colo zellner
 "colo delek
 
+""" Light Pastel Themes:
+"colo quiet
+"colo morning
+"colo wildcharm
+"colo retrobox 
+"colo peachpuff
+
 """ Dark Themes:
+"colo pablo
+"colo murphy
+"colo ron "Matrix - Follow the rabbit..
+"colo koehler
 "colo torte
 "colo industry
 "colo elflord
 "colo koehler
+"colo zaibatsu
 
 """ Dark Pastel Themes:
 colo default "This is not the real Vim Default
 "colo slate
+"colo sorbet
 "colo evening
 "colo desert
 "colo habamax
