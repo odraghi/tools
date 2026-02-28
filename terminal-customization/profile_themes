@@ -1,2 +1,5 @@
+# Command 'batcat' theme
 #export BAT_THEME="Coldark-Dark"
 export BAT_THEME="Visual Studio Dark+"
+
+PS1="\$(git_prompt)${PS1}"
