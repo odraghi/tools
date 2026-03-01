@@ -17,6 +17,7 @@ install_debian_package()
 ## Main
 
 if [ -f /etc/debian_version ]; then
+  is_installed_debian_package ncurses-bin || install_package ncurses-bin
   is_installed_debian_package eza || install_package eza
   is_installed_debian_package bat || install_package bat
 fi
