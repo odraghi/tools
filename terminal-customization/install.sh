@@ -25,6 +25,7 @@ cp vimrc "$HOME/.vimrc"
 cp bash_aliases "$HOME/.bash_aliases"
 cp profile_themes "$HOME/.profile_themes"
 
+
 LOAD_PROFILE_THEMES='. "$HOME/.profile_themes"'
 grep -q "^$LOAD_PROFILE_THEMES" ~/.profile || echo "$LOAD_PROFILE_THEMES" >> ~/.profile
 

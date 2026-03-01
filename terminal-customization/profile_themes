@@ -1,5 +1,72 @@
+#!/usr/bin/env bash
+
+BLUE=39
+WHITE=256
+GREY=237
+YELLOW=202
+
+font_color() {
+ COLOR_CODE=$1
+ tput setaf $COLOR_CODE
+}
+
+ICON_GITHUB=
+ICON_GITLAB=
+ICON_GIT= 
+ICON_BRANCH=
+
+ICON_SEARCH=
+ICON_CONFIG=
+ICON_HOME= 
+ICON_LOCK=
+ICON_SSH=
+ICON_CPU=
+ICON_DIR=
+ICON_OPEN_fOLDER=
+ICON_NETWORK=
+ICON_DATABASE=
+ICON_CODE=
+ICON_STUDIES=
+
+
+prompt_git() {
+   current_branch=$(git branch --show-current 2>/dev/null)
+   [ -z "${current_branch}" ] && return 1 # Not in a git direcory
+
+   echo $PS1 | grep -q 033 && color_prompt=yes || color_prompt=no
+
+   # `man terminfo`  to see tput option..
+   TEXT_COLOR=$(font_color $WHITE)
+   ICON_GIT_COLOR=$(font_color $WHITE)
+
+   this_icon=$ICON_GIT
+
+   # git@github.com:odraghi/tools.git
+   origin=$(git remote get-url origin 2>/dev/null)
+   echo $origin | grep -q "github.com:" && this_icon=$ICON_GITHUB && ICON_GIT_COLOR=$(font_color $BLUE)
+   echo $origin | grep -q "gitlab"      && this_icon=$ICON_GITLAB && ICON_GIT_COLOR=$(font_color $YELLOW)
+
+   [ ${color_prompt} = 'no' ] && ICON_GIT_COLOR='' && TEXT_COLOR=''
+   echo "${ICON_GIT_COLOR}${this_icon}  ${TEXT_COLOR}${ICON_BRANCH} ${current_branch} "
+}
+
+prompt_directory() {
+  echo "$PWD" | grep -q "^/etc" && echo "${ICON_CONFIG_COLOR}${ICON_CONFIG}  " && return
+  echo "$PWD" | grep -q "^/var/log" && echo "${ICON_CONFIG_COLOR}${ICON_SEARCH}  " && return
+  echo "$PWD" | grep -q "^/data/log" && echo "${ICON_CONFIG_COLOR}${ICON_SEARCH}  " && return
+  echo "$PWD" | grep -q "^/data" && echo "${ICON_CONFIG_COLOR}${ICON_DATABASE}  " && return
+  echo "$PWD" | grep -q "^${HOME}" && echo "${ICON_CONFIG_COLOR}${ICON_HOME}  " && return
+  echo "${ICON_CONFIG_COLOR}${ICON_OPEN_fOLDER}  "
+}
+
+prompt_plugins() {
+  prompt_directory ;  prompt_git
+  # prompt_git  || prompt_directory 
+}
+
 # Command 'batcat' theme
 #export BAT_THEME="Coldark-Dark"
 export BAT_THEME="Visual Studio Dark+"
 
-PS1="\$(git_prompt)${PS1}"
+PS1="\$(prompt_plugins)${PS1}"
+
