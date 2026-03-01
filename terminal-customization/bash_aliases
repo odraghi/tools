@@ -11,3 +11,5 @@ alias ls.eza.size=eza.size
 alias ls.eza.extension=eza.extension
 alias ls.eza.dirs=eza.dirs
 alias lsdirs=eza.dirs
+
+alias lsfs='df -Th -x tmpfs --total'

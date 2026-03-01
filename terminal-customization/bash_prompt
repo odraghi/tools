@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+
+## Config
+WARN_SIZE_PCENT=80
+
+## Color code for 'tput'
+RED=9
+YELLOW=202
+BLUE=39
+WHITE=256
+
+## Font icons (Need Nerd Font to rended in your terminal)
+ICON_GITHUB=
+ICON_GITLAB=
+ICON_GIT= 
+ICON_BRANCH=
+
+ICON_SEARCH=
+ICON_CONFIG=
+ICON_HOME= 
+ICON_LOCK=
+ICON_CPU=
+ICON_DIR=
+ICON_OPEN_fOLDER=
+ICON_NETWORK=
+ICON_DATABASE=
+ICON_CODE=
+ICON_STUDIES=
+
+# To avoid counting some char (and tput) in de prompt 
+BASH_ESCAPE_SPACE_BEGIN="\["
+BASH_ESCAPE_SPACE_END="\]"
+
+## Functions
+show_ansi_rainbow() {
+  for (( i = 30; i < 38; i++ )); do echo -e "\033[0;"$i"m Normal: (0;$i); \033[1;"$i"m Light: (1;$i)"; done
+}
+
+disable_prompt_icons() {
+  export PROMPT_ICONS_ENABLED=no
+}
+
+disable_prompt_plugins() {
+  export PROMPT_PLUGINS_ENABLED=no
+}
+
+disable_prompt_plugins_color() {
+  export PROMPT_PLUGINS_COLOR_ENABLED=no
+}
+
+disable_prompt_warning_size() {
+  export PROMPT_WARNING_SIZE_ENABLED=no
+}
+
+enable_prompt_icons() {
+  export PROMPT_ICONS_ENABLED=yes
+}
+
+enable_prompt_plugins() {
+  export PROMPT_PLUGINS_ENABLED=yes
+}
+
+enable_prompt_plugins_color() {
+  export PROMPT_PLUGINS_COLOR_ENABLED=yes
+}
+
+enable_prompt_warning_size() {
+  export PROMPT_WARNING_SIZE_ENABLED=yes
+}
+
+is_prompt_icons_disabled() {
+  return $([ "x$PROMPT_ICONS_ENABLED" = "xno" ])
+}
+
+is_prompt_prompt_plugins_disabled() {
+  return $([ "x$PROMPT_PLUGINS_ENABLED" = "xno" ])
+}
+
+is_prompt_prompt_plugins_color_disabled() {
+  return $([ "x$PROMPT_PLUGINS_COLOR_ENABLED" = "xno" ])
+}
+
+is_prompt_warning_size_disabled() {
+  return $([ "x$PROMPT_WARNING_SIZE_ENABLED" = "xno" ])
+}
+
+is_not_ps1_colored() {
+  echo $PS1 | grep -q 033
+  [ $? -ne 0 ] && return
+  return 1
+}
+
+# `man terminfo` other 'tput' options..
+
+# We need to wrap 'tput in [ ] to tells Bash that code are to be considered zero-width.
+# This avoid command line behavior issue cause be PS1 prompt
+# As PS1 eval already pass we need to tell bash to interpret your barcket.
+# We do that with a var opperator @P that expanding the value for prompting
+tput_safe_zero_width() {
+  echo "${BASH_ESCAPE_SPACE_BEGIN@P}$( tput $@ )${BASH_ESCAPE_SPACE_END@P}"
+}
+
+font_color() {
+  is_not_ps1_colored && return 
+  is_prompt_prompt_plugins_color_disabled && return 
+  COLOR_CODE=$1
+  tput_safe_zero_width setaf $COLOR_CODE
+}
+
+font_warning() {
+  font_color $RED
+  tput_safe_zero_width bold
+}
+
+font_reset() {
+  #tput sgr0
+  tput_safe_zero_width sgr0
+}
+
+prompt_warning_size() {
+  is_prompt_warning_size_disabled  && return
+  WARN_SIZE_PCENT=${WARN_SIZE_PCENT:-80}
+  size_pcent_used=$(df --output=pcent . | tail -1 | tr -d '[:space:]%')
+  [ $size_pcent_used -lt $WARN_SIZE_PCENT ] && return # Size is OK
+  size_available=$(df -h --output=avail . | tail -1 | tr -d '[:space:]')
+  this_filesystem=$(df --output=target . | tail -1 | tr -d '[:space:]')
+  message="WARNING Filesystem ${this_filesystem} ${size_available} free"
+  echo "$(font_warning)${BASH_ESCAPE_SPACE_BEGIN@P}${message}${BASH_ESCAPE_SPACE_END@P}$(font_reset)"
+}
+
+font_icon() {
+  icon=$1
+  [ -n $2 ] && placeholder=$2 || placeholder=$icon
+  is_prompt_icons_disabled && echo -n $placeholder || {
+    case $icon in
+    git)
+      echo -n $ICON_GIT
+      ;;
+    github)
+      echo -n $ICON_GITHUB
+      ;;
+    gitlab)
+      echo -n $ICON_GITLAB
+      ;;
+    branch)
+      echo -n $ICON_BRANCH
+      ;;
+    home)
+      echo -n $ICON_HOME
+      ;;
+    config)
+      echo -n $ICON_CONFIG
+      ;;
+    database)
+      echo -n $ICON_DATABASE
+      ;;
+    search)
+      echo -n $ICON_SEARCH
+      ;;
+    open_folder)
+      echo -n $ICON_OPEN_fOLDER
+      ;;
+   esac
+  }
+}
+
+prompt_final_spacer() {
+  last_spacer_with_icon='  '
+  is_prompt_prompt_plugins_color_disabled || echo -n "$(font_reset)"
+  is_prompt_icons_disabled || echo -n "$last_spacer_with_icon"
+}
+
+prompt_git() {
+  current_branch=$(git branch --show-current 2>/dev/null)
+  [ -z "${current_branch}" ] && return 1 # Not in a git direcory
+
+  this_icon='git'
+  this_icon_color=$(font_color $WHITE)
+
+  # git@github.com:odraghi/tools.git
+  origin=$(git remote get-url origin 2>/dev/null)
+
+  echo $origin | grep -q "github.com:" && {
+    this_icon='github'
+    this_icon_color=$(font_color $BLUE)
+  }
+
+  echo $origin | grep -q "gitlab" && {
+    this_icon='gitlab'
+    this_icon_color=$(font_color $YELLOW)
+  }
+  this_placeholder=$this_icon
+  echo "${this_icon_color}$(font_icon $this_icon $this_placeholder)$(font_reset)  $(font_icon 'branch' 'in') ${current_branch} "
+}
+
+prompt_directory() {
+  echo "$PWD" | grep -q "^/etc"      && echo "$(font_color $WHITE)$(font_icon config)$(prompt_final_spacer)" && return
+  echo "$PWD" | grep -q "^/var/log"  && echo "$(font_color $WHITE)$(font_icon search)$(prompt_final_spacer)" && return
+  echo "$PWD" | grep -q "^/data/log" && echo "$(font_color $WHITE)$(font_icon search)$(prompt_final_spacer)" && return
+  echo "$PWD" | grep -q "^/data"     && echo "$(font_color $WHITE)$(font_icon database)$(prompt_final_spacer)" && return
+  echo "$PWD" | grep -q "^${HOME}$"   && echo "$(font_color $WHITE)$(font_icon home)$(prompt_final_spacer)" && return
+  echo "$(font_color $WHITE)$(font_icon open_folder)$(prompt_final_spacer)"
+}
+
+prompt_plugins() {
+  is_prompt_prompt_plugins_disabled && return
+  prompt_warning_size
+  prompt_git || prompt_directory 
+}
+
+PS1="\$(prompt_plugins)${PS1}"
