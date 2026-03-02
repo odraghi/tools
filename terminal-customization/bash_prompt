@@ -210,4 +210,4 @@ prompt_plugins() {
   prompt_git || prompt_directory 
 }
 
-PS1="\$(prompt_plugins)${PS1}"
+PS1="\$(prompt_plugins $?)${PS1}"
