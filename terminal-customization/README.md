@@ -31,6 +31,7 @@ You must install a **Nerd font** in your **Terminal Desktop** to be able to rede
 https://www.nerdfonts.com/font-downloads
 
 I like `UbuntuSansMono NF` - https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/UbuntuSans.zip
+File: UbuntuSansMonoNerdFont-Regular.ttf
 
 **Tips for MacOS**
 1. Download the zip file and unzip it.
