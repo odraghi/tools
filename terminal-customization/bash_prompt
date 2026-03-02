@@ -3,6 +3,12 @@
 ## Config
 WARN_SIZE_PCENT=80
 
+# Change default behavior
+#export PROMPT_PLUGINS_ENABLED=no
+#export PROMPT_PLUGINS_COLOR_ENABLED=no
+#export PROMPT_WARNING_SIZE_ENABLED=no
+#export PROMPT_ICONS_ENABLED=no
+
 ## Color code for 'tput'
 RED=9
 YELLOW=202
@@ -32,10 +38,6 @@ BASH_ESCAPE_SPACE_BEGIN="\["
 BASH_ESCAPE_SPACE_END="\]"
 
 ## Functions
-show_ansi_rainbow() {
-  for (( i = 30; i < 38; i++ )); do echo -e "\033[0;"$i"m Normal: (0;$i); \033[1;"$i"m Light: (1;$i)"; done
-}
-
 disable_prompt_icons() {
   export PROMPT_ICONS_ENABLED=no
 }
