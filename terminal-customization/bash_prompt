@@ -109,6 +109,13 @@ font_color() {
   tput_safe_zero_width setaf $COLOR_CODE
 }
 
+font_background_color() {
+  is_not_ps1_colored && return 
+  is_prompt_prompt_plugins_color_disabled && return 
+  COLOR_CODE=$1
+  tput_safe_zero_width setab $COLOR_CODE
+}
+
 font_warning() {
   font_color $RED
   tput_safe_zero_width bold
@@ -117,6 +124,28 @@ font_warning() {
 font_reset() {
   #tput sgr0
   tput_safe_zero_width sgr0
+}
+
+tput_rainbow() {
+  for B in {1..256}; do
+    echo -e "\nBackground $B , Foregrounds:"
+    for F in {1..256}; do
+      printf "$(tput setaf $F)$(tput setab $B) %-5s $(tput sgr0)" $F
+    done
+  done
+}
+
+tput_rainbow_background_for_font_color() {
+  fg_color=${1:-231} # Default white
+  nb_of_message_per_line=3
+  count_message=0
+  for BACK in {1..256} ; do
+    ((count_message++))
+    BORDER="$(font_color $BACK)$(font_background_color 256)"
+    echo -e "$BORDER$(font_color $fg_color)$(font_background_color $BACK)   font $fg_color - background $BACK $BORDER$(font_reset)   \c"
+    [ $count_message -eq $nb_of_message_per_line ] && count_message=0 && echo -e "\n"
+  done
+  echo
 }
 
 prompt_warning_size() {
