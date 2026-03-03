@@ -12,10 +12,13 @@ WARN_SIZE_PCENT=80
 ## Color code for 'tput'
 #RED=9
 RED=196
-YELLOW=202
+ORANGE=202
 BLUE=39
 DEFAULT=256
 GREEN=70
+WHITE=231
+PYTHON_BG_COLOR=24
+PYTHON_FG_COLOR=$WHITE
 
 
 ## Font icons (Need Nerd Font to rended in your terminal)
@@ -259,7 +262,7 @@ prompt_git() {
 
   echo $origin | grep -q "gitlab" && {
     this_icon='gitlab'
-    this_icon_color=$(font_color $YELLOW)
+    this_icon_color=$(font_color $ORANGE)
   }
   this_placeholder=$this_icon
   echo "${this_icon_color}$(font_icon $this_icon $this_placeholder)$(font_reset)  $(font_icon 'branch' 'in') ${current_branch} "
@@ -275,7 +278,7 @@ prompt_venv_info() {
   [ -z $VIRTUAL_ENV ] && return
   this_icon='python'
   this_placeholder='python:'
-  prompt_message_in_bubble $DEFAULT $YELLOW "$(font_icon $this_icon $this_placeholder ) $(basename $VIRTUAL_ENV)"
+  prompt_message_in_bubble $PYTHON_FG_COLOR $PYTHON_BG_COLOR "$(font_icon $this_icon $this_placeholder ) $(basename $VIRTUAL_ENV)"
 }
 
 prompt_directory_icon() {
@@ -303,7 +306,7 @@ prompt_plugins() {
   prompt_venv_ps1_remove # Must be the first
   prompt_clock
   prompt_venv_info
-  prompt_message_in_bubble $DEFAULT 196 "$(font_icon dialog) Hello la famille ca va chez vous ?"
+  #prompt_message_in_bubble $DEFAULT $RED "$(font_icon dialog) Hello la famille ca va chez vous ?"
   prompt_warning_size
   echo
   prompt_git || prompt_directory 
