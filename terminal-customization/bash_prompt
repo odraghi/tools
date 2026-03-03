@@ -10,10 +10,13 @@ WARN_SIZE_PCENT=80
 #export PROMPT_ICONS_ENABLED=no
 
 ## Color code for 'tput'
-RED=9
+#RED=9
+RED=196
 YELLOW=202
 BLUE=39
-WHITE=256
+DEFAULT=256
+GREEN=70
+
 
 ## Font icons (Need Nerd Font to rended in your terminal)
 ICON_GITHUB=
@@ -21,15 +24,23 @@ ICON_GITLAB=
 ICON_GIT= 
 ICON_BRANCH=
 
-ICON_SEARCH=
-ICON_CONFIG=
 ICON_HOME= 
-ICON_LOCK=
-ICON_CPU=
 ICON_DIR=
 ICON_OPEN_fOLDER=
-ICON_NETWORK=
 ICON_DATABASE=
+ICON_CONFIG=
+ICON_LOG=󱂅
+ICON_PYTHON=
+ICON_DIALOG=
+ICON_LEFT_HALF_CIRCLE=
+ICON_RIGHT_HALF_CIRCLE=
+ICON_WARNING=
+ICON_CLOCK=󰅐
+
+ICON_SEARCH=
+ICON_LOCK=
+ICON_CPU=
+ICON_NETWORK=
 ICON_CODE=
 ICON_STUDIES=
 
@@ -135,13 +146,24 @@ tput_rainbow() {
   done
 }
 
+prompt_message_in_bubble() {
+  fg_color=${1:-256}
+  bg_color=${2:-77}
+  message=${3:-Hello}
+  after_bubble=${4:-\\c}
+  border_color="$(font_reset)$(font_color $bg_color)$(font_background_color $DEFAULT)"
+  echo -e "${border_color}$(font_icon left_half_circle)\c"
+  echo -e "$(font_color $fg_color)$(font_background_color $bg_color)${message}\c"
+  echo -e "${border_color}$(font_icon right_half_circle)$(font_reset)${after_bubble}"
+}
+
 tput_rainbow_background_for_font_color() {
   fg_color=${1:-231} # Default white
   nb_of_message_per_line=3
   count_message=0
   for BACK in {1..256} ; do
     ((count_message++))
-    border_color="$(font_reset)$(font_color $BACK)$(font_background_color 256)" 
+    border_color="$(font_reset)$(font_color $BACK)$(font_background_color $DEFAULT)" 
     echo -e "${border_color}$(font_color $fg_color)$(font_background_color $BACK)   font $fg_color - background $BACK ${border_color}$(font_reset)   \c"
     [ $count_message -eq $nb_of_message_per_line ] && count_message=0 && echo -e "\n"
   done
@@ -155,8 +177,9 @@ prompt_warning_size() {
   [ $size_pcent_used -lt $WARN_SIZE_PCENT ] && return # Size is OK
   size_available=$(df -h --output=avail . | tail -1 | tr -d '[:space:]')
   this_filesystem=$(df --output=target . | tail -1 | tr -d '[:space:]')
-  message="WARNING Filesystem ${this_filesystem} ${size_available} free"
-  echo "$(font_warning)${BASH_ESCAPE_SPACE_BEGIN@P}${message}${BASH_ESCAPE_SPACE_END@P}$(font_reset)"
+  message="$(font_icon warning WARNING) Filesystem ${this_filesystem} ${size_available} free"
+  #echo "$(font_warning)${BASH_ESCAPE_SPACE_BEGIN@P}${message}${BASH_ESCAPE_SPACE_END@P}$(font_reset)"
+  prompt_message_in_bubble $DEFAULT $RED "$message"
 }
 
 font_icon() {
@@ -185,11 +208,29 @@ font_icon() {
     database)
       echo -n $ICON_DATABASE
       ;;
-    search)
-      echo -n $ICON_SEARCH
+    log)
+      echo -n $ICON_LOG
       ;;
     open_folder)
       echo -n $ICON_OPEN_fOLDER
+      ;;
+    python)
+      echo -n $ICON_PYTHON
+      ;;
+    dialog)
+      echo -n $ICON_DIALOG
+      ;;
+    left_half_circle)
+      echo -n $ICON_LEFT_HALF_CIRCLE
+      ;;
+    right_half_circle)
+      echo -n $ICON_RIGHT_HALF_CIRCLE
+      ;;
+    warning)
+      echo -n $ICON_WARNING
+      ;;
+    clock)
+      echo -n $ICON_CLOCK
       ;;
    esac
   }
@@ -206,7 +247,7 @@ prompt_git() {
   [ -z "${current_branch}" ] && return 1 # Not in a git direcory
 
   this_icon='git'
-  this_icon_color=$(font_color $WHITE)
+  this_icon_color=$(font_color $DEFAULT)
 
   # git@github.com:odraghi/tools.git
   origin=$(git remote get-url origin 2>/dev/null)
@@ -224,18 +265,47 @@ prompt_git() {
   echo "${this_icon_color}$(font_icon $this_icon $this_placeholder)$(font_reset)  $(font_icon 'branch' 'in') ${current_branch} "
 }
 
+prompt_venv_ps1_remove() {
+  [ -z $VIRTUAL_ENV_PROMPT ] && return
+  # Remove venv name from the prompt (it was injected in PS1 by bin/activate)
+  echo -e "\r\c"
+}
+
+prompt_venv_info() {
+  [ -z $VIRTUAL_ENV ] && return
+  this_icon='python'
+  this_placeholder='python:'
+  prompt_message_in_bubble $DEFAULT $YELLOW "$(font_icon $this_icon $this_placeholder ) $(basename $VIRTUAL_ENV)"
+}
+
+prompt_directory_icon() {
+  this_icon=$1
+  # Notice that we call font_icon with only 1 arg. (no placeholder)
+  echo "$(font_color $DEFAULT)$(font_icon $this_icon)$(prompt_final_spacer)"
+}
+
 prompt_directory() {
-  echo "$PWD" | grep -q "^/etc"      && echo "$(font_color $WHITE)$(font_icon config)$(prompt_final_spacer)" && return
-  echo "$PWD" | grep -q "^/var/log"  && echo "$(font_color $WHITE)$(font_icon search)$(prompt_final_spacer)" && return
-  echo "$PWD" | grep -q "^/data/log" && echo "$(font_color $WHITE)$(font_icon search)$(prompt_final_spacer)" && return
-  echo "$PWD" | grep -q "^/data"     && echo "$(font_color $WHITE)$(font_icon database)$(prompt_final_spacer)" && return
-  echo "$PWD" | grep -q "^${HOME}$"   && echo "$(font_color $WHITE)$(font_icon home)$(prompt_final_spacer)" && return
-  echo "$(font_color $WHITE)$(font_icon open_folder)$(prompt_final_spacer)"
+  echo "$PWD" | grep -q "^/etc"      && prompt_directory_icon config   && return
+  echo "$PWD" | grep -qe "/logs\?\$" && prompt_directory_icon log      && return
+  echo "$PWD" | grep -q "^/data"     && prompt_directory_icon database && return
+  echo "$PWD" | grep -q "^${HOME}$"  && prompt_directory_icon home     && return
+  prompt_directory_icon open_folder
+}
+
+prompt_clock() {
+  PROMPT_TIME='\A'
+  prompt_message_in_bubble 60 233 "$(font_icon clock) ${PROMPT_TIME@P}"
 }
 
 prompt_plugins() {
   is_prompt_prompt_plugins_disabled && return
+  [ $TERM != 'xterm-256color' ] && disable_prompt_icons && disable_prompt_plugins_color
+  prompt_venv_ps1_remove # Must be the first
+  prompt_clock
+  prompt_venv_info
+  prompt_message_in_bubble $DEFAULT 196 "$(font_icon dialog) Hello la famille ca va chez vous ?"
   prompt_warning_size
+  echo
   prompt_git || prompt_directory 
 }
 
