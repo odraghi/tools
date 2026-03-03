@@ -141,8 +141,8 @@ tput_rainbow_background_for_font_color() {
   count_message=0
   for BACK in {1..256} ; do
     ((count_message++))
-    BORDER="$(font_color $BACK)$(font_background_color 256)"
-    echo -e "$BORDER$(font_color $fg_color)$(font_background_color $BACK)   font $fg_color - background $BACK $BORDER$(font_reset)   \c"
+    border_color="$(font_reset)$(font_color $BACK)$(font_background_color 256)" 
+    echo -e "${border_color}$(font_color $fg_color)$(font_background_color $BACK)   font $fg_color - background $BACK ${border_color}$(font_reset)   \c"
     [ $count_message -eq $nb_of_message_per_line ] && count_message=0 && echo -e "\n"
   done
   echo
