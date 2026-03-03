@@ -17,4 +17,6 @@ runcmd:
 - systemctl enable qemu-guest-agent
 - systemctl start qemu-guest-agent
 - sed -i 's/GRUB_CMDLINE_LINUX=""/GRUB_CMDLINE_LINUX="vga=871"/' /etc/default/grub
+- ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime
+- dpkg-reconfigure -fnoninteractive tzdata
 - update-grub
