@@ -3,6 +3,9 @@
 ## Config
 WARN_SIZE_PCENT=80
 
+## Need to disable python venv activate modificaion of the prompt.
+export VIRTUAL_ENV_DISABLE_PROMPT=yes
+
 # Change default behavior
 #export PROMPT_PLUGINS_ENABLED=no
 #export PROMPT_PLUGINS_COLOR_ENABLED=no
@@ -397,6 +400,7 @@ prompt_git() {
 prompt_venv_ps1_remove() {
   [ -z $VIRTUAL_ENV_PROMPT ] && return
   # Remove venv name from the prompt (it was injected in PS1 by bin/activate)
+  #echo
   echo -e "\r\c"
 }
 
