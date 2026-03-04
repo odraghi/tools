@@ -19,8 +19,10 @@ WHITE=231
 DEFAULT=256
 
 CONTEXT_BAR_BG_COLOR=233
+CONTEXT_BAR_BG_COLOR=236
 
-CLOCK_BEGIN_BG_COLOR=$DEFAULT
+#CLOCK_BEGIN_BG_COLOR=$DEFAULT
+CLOCK_BEGIN_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 CLOCK_FG_COLOR=60
 CLOCK_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 CLOCK_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
@@ -162,20 +164,42 @@ tput_rainbow() {
   done
 }
 
-prompt_message_in_bubble() {
-  fg_color=${1:-256}
-  bg_color=${2:-77}
-  message=${3:-Hello}
-  begin_bg_color=${4:-256}
-  end_bg_color=${5:-256}
+prompt_message_wrapped_in() {
+  decorator=${1:-bubble}
+  fg_color=${2:-256}
+  bg_color=${3:-77}
+  message=${4:-}
+  begin_bg_color=${5:-256}
+  end_bg_color=${6:-256}
+
+  case $decorator in
+  bubble)
+    icon_begin="left_half_circle"
+    icon_end="right_half_circle"
+    ;;
+  *) # All or none
+     icon_begin=''
+     icon_end=''
+     begin_border_color=''
+     end_border_color=''
+     ;;
+  esac
 
   font_border_color="$(font_reset)$(font_color $bg_color)"
-  begin_border_color="${font_border_color}$(font_background_color $begin_bg_color)"
-  end_border_color="${font_border_color}$(font_background_color $end_bg_color)"
-  echo -e "${begin_border_color}$(font_icon left_half_circle)\c"
+
+  [ -z $icon_begin ] || {
+    begin_border_color="${font_border_color}$(font_background_color $begin_bg_color)"
+    echo -e "${begin_border_color}$(font_icon $icon_begin)\c"
+  }
+
   echo -e "$(font_color $fg_color)$(font_background_color $bg_color)${message}\c"
-  echo -e "${end_border_color}$(font_icon right_half_circle)\c"
-  echo -e "$(font_color $end_bg_color) $(font_reset)\c"
+
+  [ -z $icon_end ] || {
+    end_border_color="${font_border_color}$(font_background_color $end_bg_color)"
+    echo -e "${end_border_color}$(font_icon $icon_end)\c"
+  }
+
+    echo -e "$(font_reset)\c"
 }
 
 tput_rainbow_background_for_font_color() {
@@ -199,8 +223,7 @@ prompt_warning_size() {
   size_available=$(df -h --output=avail . | tail -1 | tr -d '[:space:]')
   this_filesystem=$(df --output=target . | tail -1 | tr -d '[:space:]')
   message="$(font_icon warning WARNING) Filesystem ${this_filesystem} ${size_available} free"
-  #echo "$(font_warning)${BASH_ESCAPE_SPACE_BEGIN@P}${message}${BASH_ESCAPE_SPACE_END@P}$(font_reset)"
-  prompt_message_in_bubble $DEFAULT $RED "$message"
+  prompt_message_wrapped_in "bubble" $DEFAULT $RED "$message"
 }
 
 font_icon() {
@@ -288,11 +311,7 @@ prompt_git() {
   this_placeholder=$this_icon
   echo -e "${this_background_color}\c"
   echo -e "${this_icon_color}$(font_icon $this_icon $this_placeholder)\c"
-  echo -e "${this_background_color}${this_font_color}  $(font_icon 'branch' 'branch:') ${current_branch}\c"
-
-  end_border_color="$(font_color $GIT_BG_COLOR)$(font_background_color $DEFAULT)"
-  echo -e "${end_border_color} $(font_icon right_half_circle)\c"
-  echo -e " $(font_reset)\c"
+  echo -e "${this_background_color}${this_font_color}  $(font_icon 'branch' 'branch:') ${current_branch}$(font_reset)\c"
 }
 
 prompt_venv_ps1_remove() {
@@ -302,12 +321,13 @@ prompt_venv_ps1_remove() {
 }
 
 prompt_venv_info() {
-  [ -z $VIRTUAL_ENV ] && return
+  [ -z $VIRTUAL_ENV ] && return 1
   this_icon='python'
   this_placeholder='python:'
-  prompt_message_in_bubble $PYTHON_FG_COLOR $PYTHON_BG_COLOR \
-                           "$(font_icon $this_icon $this_placeholder ) $(basename $VIRTUAL_ENV)" \
-                           $PYTHON_BEGIN_FG_COLOR $PYTHON_END_BG_COLOR
+  prompt_message_wrapped_in "bubble" \
+                            $PYTHON_FG_COLOR $PYTHON_BG_COLOR \
+                            "$(font_icon $this_icon $this_placeholder ) $(basename $VIRTUAL_ENV)" \
+                            $PYTHON_BEGIN_FG_COLOR $PYTHON_END_BG_COLOR
 }
 
 prompt_directory_icon() {
@@ -325,24 +345,49 @@ prompt_directory() {
 }
 
 prompt_clock() {
-  PROMPT_TIME='\A'
-  prompt_message_in_bubble $CLOCK_FG_COLOR $CLOCK_BG_COLOR \
-                           "$(font_icon clock) ${PROMPT_TIME@P}" \
-                           $CLOCK_BEGIN_BG_COLOR $CLOCK_END_BG_COLOR
+  prompt_time='\A'
+  message="$(font_icon clock) ${prompt_time@P}"
+  prompt_message_wrapped_in "none" \
+                            $CLOCK_FG_COLOR $CLOCK_BG_COLOR \
+                            "$message"
+                            $CLOCK_BEGIN_BG_COLOR $CLOCK_END_BG_COLOR
+}
+
+prompt_separator_context_bar() {
+  prompt_message_wrapped_in "none" \
+                            $CONTEXT_BAR_BG_COLOR $CONTEXT_BAR_BG_COLOR \
+                            " " \
+                            $CONTEXT_BAR_BG_COLOR $CONTEXT_BAR_BG_COLOR
+}
+
+prompt_begin_context_bar() {
+  prompt_message_wrapped_in "bubble" \
+                            $CONTEXT_BAR_BG_COLOR $CONTEXT_BAR_BG_COLOR \
+                            "" \
+                            $DEFAULT $CONTEXT_BAR_BG_COLOR
+}
+
+prompt_end_context_bar() {
+  prompt_message_wrapped_in "bubble" \
+                            $CONTEXT_BAR_BG_COLOR $CONTEXT_BAR_BG_COLOR \
+                            "" \
+                            $CONTEXT_BAR_BG_COLOR $DEFAULT
 }
 
 prompt_plugins() {
   is_prompt_prompt_plugins_disabled && return
   [ $TERM != 'xterm-256color' ] && disable_prompt_icons && disable_prompt_plugins_color
   prompt_venv_ps1_remove # Must be the first
+  prompt_begin_context_bar
   prompt_clock
-  prompt_venv_info
+  prompt_separator_context_bar
+  prompt_venv_info && prompt_separator_context_bar
   prompt_git
-  #prompt_message_in_bubble $DEFAULT $RED "$(font_icon dialog) Hello la famille ca va chez vous ?"
+  #prompt_message_wrapped_in "bubble" $DEFAULT $RED "$(font_icon dialog) Hello la famille ca va chez vous ?"
+  prompt_end_context_bar
   prompt_warning_size
   echo
   prompt_directory 
-  #prompt_git || prompt_directory 
 }
 
 PS1="\$(prompt_plugins $?)${PS1}"
