@@ -14,12 +14,25 @@ WARN_SIZE_PCENT=80
 RED=196
 ORANGE=202
 BLUE=39
-DEFAULT=256
 GREEN=70
 WHITE=231
+DEFAULT=256
+
+CONTEXT_BAR_BG_COLOR=233
+
+CLOCK_BEGIN_BG_COLOR=$DEFAULT
+CLOCK_FG_COLOR=60
+CLOCK_BG_COLOR=$CONTEXT_BAR_BG_COLOR
+CLOCK_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
+
+
+GIT_BG_COLOR=$CONTEXT_BAR_BG_COLOR
+GIT_FG_COLOR=$WHITE
+
+PYTHON_BEGIN_FG_COLOR=$CONTEXT_BAR_BG_COLOR
 PYTHON_BG_COLOR=24
 PYTHON_FG_COLOR=$WHITE
-
+PYTHON_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 
 ## Font icons (Need Nerd Font to rended in your terminal)
 ICON_GITHUB=
@@ -153,11 +166,16 @@ prompt_message_in_bubble() {
   fg_color=${1:-256}
   bg_color=${2:-77}
   message=${3:-Hello}
-  after_bubble=${4:-\\c}
-  border_color="$(font_reset)$(font_color $bg_color)$(font_background_color $DEFAULT)"
-  echo -e "${border_color}$(font_icon left_half_circle)\c"
+  begin_bg_color=${4:-256}
+  end_bg_color=${5:-256}
+
+  font_border_color="$(font_reset)$(font_color $bg_color)"
+  begin_border_color="${font_border_color}$(font_background_color $begin_bg_color)"
+  end_border_color="${font_border_color}$(font_background_color $end_bg_color)"
+  echo -e "${begin_border_color}$(font_icon left_half_circle)\c"
   echo -e "$(font_color $fg_color)$(font_background_color $bg_color)${message}\c"
-  echo -e "${border_color}$(font_icon right_half_circle)$(font_reset)${after_bubble}"
+  echo -e "${end_border_color}$(font_icon right_half_circle)\c"
+  echo -e "$(font_color $end_bg_color) $(font_reset)\c"
 }
 
 tput_rainbow_background_for_font_color() {
@@ -249,8 +267,11 @@ prompt_git() {
   current_branch=$(git branch --show-current 2>/dev/null)
   [ -z "${current_branch}" ] && return 1 # Not in a git direcory
 
+  this_background_color=$(font_background_color $GIT_BG_COLOR)
+  this_font_color=$(font_color $GIT_FG_COLOR)
+
   this_icon='git'
-  this_icon_color=$(font_color $DEFAULT)
+  this_icon_color=$(font_color $RED)
 
   # git@github.com:odraghi/tools.git
   origin=$(git remote get-url origin 2>/dev/null)
@@ -265,7 +286,13 @@ prompt_git() {
     this_icon_color=$(font_color $ORANGE)
   }
   this_placeholder=$this_icon
-  echo "${this_icon_color}$(font_icon $this_icon $this_placeholder)$(font_reset)  $(font_icon 'branch' 'in') ${current_branch} "
+  echo -e "${this_background_color}\c"
+  echo -e "${this_icon_color}$(font_icon $this_icon $this_placeholder)\c"
+  echo -e "${this_background_color}${this_font_color}  $(font_icon 'branch' 'branch:') ${current_branch}\c"
+
+  end_border_color="$(font_color $GIT_BG_COLOR)$(font_background_color $DEFAULT)"
+  echo -e "${end_border_color} $(font_icon right_half_circle)\c"
+  echo -e " $(font_reset)\c"
 }
 
 prompt_venv_ps1_remove() {
@@ -278,7 +305,9 @@ prompt_venv_info() {
   [ -z $VIRTUAL_ENV ] && return
   this_icon='python'
   this_placeholder='python:'
-  prompt_message_in_bubble $PYTHON_FG_COLOR $PYTHON_BG_COLOR "$(font_icon $this_icon $this_placeholder ) $(basename $VIRTUAL_ENV)"
+  prompt_message_in_bubble $PYTHON_FG_COLOR $PYTHON_BG_COLOR \
+                           "$(font_icon $this_icon $this_placeholder ) $(basename $VIRTUAL_ENV)" \
+                           $PYTHON_BEGIN_FG_COLOR $PYTHON_END_BG_COLOR
 }
 
 prompt_directory_icon() {
@@ -297,7 +326,9 @@ prompt_directory() {
 
 prompt_clock() {
   PROMPT_TIME='\A'
-  prompt_message_in_bubble 60 233 "$(font_icon clock) ${PROMPT_TIME@P}"
+  prompt_message_in_bubble $CLOCK_FG_COLOR $CLOCK_BG_COLOR \
+                           "$(font_icon clock) ${PROMPT_TIME@P}" \
+                           $CLOCK_BEGIN_BG_COLOR $CLOCK_END_BG_COLOR
 }
 
 prompt_plugins() {
@@ -306,10 +337,12 @@ prompt_plugins() {
   prompt_venv_ps1_remove # Must be the first
   prompt_clock
   prompt_venv_info
+  prompt_git
   #prompt_message_in_bubble $DEFAULT $RED "$(font_icon dialog) Hello la famille ca va chez vous ?"
   prompt_warning_size
   echo
-  prompt_git || prompt_directory 
+  prompt_directory 
+  #prompt_git || prompt_directory 
 }
 
 PS1="\$(prompt_plugins $?)${PS1}"
