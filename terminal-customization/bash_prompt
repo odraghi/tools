@@ -27,6 +27,19 @@ CLOCK_FG_COLOR=60
 CLOCK_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 CLOCK_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 
+##  Decorator list:
+## - none
+## - bubble
+## - pointer_in
+## - pointer_out
+## - arrow_right
+## - arrow_left
+## - parallelogram_right
+## - parallelogram_left
+## - circle_right
+## - circle_left
+
+VENV_DECORATOR=bubble
 
 GIT_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 GIT_FG_COLOR=$WHITE
@@ -159,6 +172,10 @@ prompt_message_wrapped_in() {
     icon_begin="right_hard_divider"
     icon_end="left_hard_divider"
     ;;
+  arrow_right)
+    icon_begin="left_hard_divider_inversed"
+    icon_end="left_hard_divider"
+    ;;
   arrow_left)
     icon_begin="right_hard_divider"
     icon_end="right_hard_divider_inversed"
@@ -170,6 +187,14 @@ prompt_message_wrapped_in() {
   parallelogram_left)
     icon_begin="upper_right_triangle"
     icon_end="lower_left_triangle"
+    ;;
+  circle_right)
+    icon_begin="full_block"
+    icon_end="right_half_circle"
+    ;;
+  circle_left)
+    icon_begin="left_half_circle"
+    icon_end="full_block"
     ;;
   bubble)
     icon_begin="left_half_circle"
@@ -212,6 +237,7 @@ tput_rainbow_background_for_font_color() {
   done
   echo
 }
+
 
 prompt_warning_size() {
   is_prompt_warning_size_disabled  && return
@@ -285,17 +311,20 @@ font_icon() {
     dialog)
       echo -n 
       ;;
-    left_half_circle)
-      echo -n 
-      ;;
-    right_half_circle)
-      echo -n 
-      ;;
     warning)
       echo -n 
       ;;
     clock)
       echo -n 󰅐
+      ;;
+    full_block)
+      echo -n █
+      ;;
+    left_half_circle)
+      echo -n 
+      ;;
+    right_half_circle)
+      echo -n 
       ;;
     lower_left_triangle)
       echo -n 
@@ -375,10 +404,47 @@ prompt_venv_info() {
   [ -z $VIRTUAL_ENV ] && return 1
   this_icon='python'
   this_placeholder='python:'
-  prompt_message_wrapped_in "bubble" \
+  this_decorator=${VENV_DECORATOR:-bubble}
+  prompt_message_wrapped_in $this_decorator \
                             $PYTHON_FG_COLOR $PYTHON_BG_COLOR \
                             "$(font_icon $this_icon $this_placeholder ) $(basename $VIRTUAL_ENV)" \
                             $PYTHON_BEGIN_FG_COLOR $PYTHON_END_BG_COLOR
+}
+
+prompt_venv_decorator_bubble() {
+  VENV_DECORATOR=bubble
+}
+
+prompt_venv_decorator_pointer_in() {
+  VENV_DECORATOR=pointer_in
+}
+
+prompt_venv_decorator_pointer_out() {
+  VENV_DECORATOR=pointer_out
+}
+
+prompt_venv_decorator_arrow_right() {
+  VENV_DECORATOR=arrow_right
+}
+
+prompt_venv_decorator_arrow_left() {
+  VENV_DECORATOR=arrow_left
+}
+
+prompt_venv_decorator_parallelogram_right() {
+  VENV_DECORATOR=parallelogram_right
+}
+
+prompt_venv_decorator_parallelogram_left() {
+  VENV_DECORATOR=parallelogram_left
+}
+
+prompt_venv_decorator_circle_right() {
+  VENV_DECORATOR=circle_right
+}
+
+prompt_venv_decorator_circle_left() {
+  VENV_DECORATOR=circle_left
 }
 
 prompt_directory_icon() {
