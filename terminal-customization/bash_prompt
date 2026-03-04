@@ -14,11 +14,11 @@ WARN_SIZE_PCENT=80
 RED=196
 ORANGE=202
 BLUE=39
+BROWN=137
 GREEN=70
 WHITE=231
 DEFAULT=256
 
-CONTEXT_BAR_BG_COLOR=233
 CONTEXT_BAR_BG_COLOR=236
 
 #CLOCK_BEGIN_BG_COLOR=$DEFAULT
@@ -30,37 +30,14 @@ CLOCK_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 
 GIT_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 GIT_FG_COLOR=$WHITE
+ICON_GIT_COLOR=$BROWN
+ICON_GITHUB_COLOR=$BLUE
+ICON_GITLAB_COLOR=$ORANGE
 
 PYTHON_BEGIN_FG_COLOR=$CONTEXT_BAR_BG_COLOR
 PYTHON_BG_COLOR=24
 PYTHON_FG_COLOR=$WHITE
 PYTHON_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
-
-## Font icons (Need Nerd Font to rended in your terminal)
-ICON_GITHUB=
-ICON_GITLAB=
-ICON_GIT= 
-ICON_BRANCH=
-
-ICON_HOME= 
-ICON_DIR=
-ICON_OPEN_fOLDER=
-ICON_DATABASE=
-ICON_CONFIG=
-ICON_LOG=󱂅
-ICON_PYTHON=
-ICON_DIALOG=
-ICON_LEFT_HALF_CIRCLE=
-ICON_RIGHT_HALF_CIRCLE=
-ICON_WARNING=
-ICON_CLOCK=󰅐
-
-ICON_SEARCH=
-ICON_LOCK=
-ICON_CPU=
-ICON_NETWORK=
-ICON_CODE=
-ICON_STUDIES=
 
 # To avoid counting some char (and tput) in de prompt 
 BASH_ESCAPE_SPACE_BEGIN="\["
@@ -172,7 +149,28 @@ prompt_message_wrapped_in() {
   begin_bg_color=${5:-256}
   end_bg_color=${6:-256}
 
+
   case $decorator in
+  pointer_in)
+    icon_begin="left_hard_divider_inversed"
+    icon_end="right_hard_divider_inversed"
+    ;;
+  pointer_out)
+    icon_begin="right_hard_divider"
+    icon_end="left_hard_divider"
+    ;;
+  arrow_left)
+    icon_begin="right_hard_divider"
+    icon_end="right_hard_divider_inversed"
+    ;;
+  parallelogram_right)
+    icon_begin="lower_right_triangle"
+    icon_end="upper_left_triangle"
+    ;;
+  parallelogram_left)
+    icon_begin="upper_right_triangle"
+    icon_end="lower_left_triangle"
+    ;;
   bubble)
     icon_begin="left_half_circle"
     icon_end="right_half_circle"
@@ -230,51 +228,104 @@ font_icon() {
   icon=$1
   [ -n $2 ] && placeholder=$2 || placeholder=$icon
   is_prompt_icons_disabled && echo -n $placeholder || {
+
+   ## Font icons (Need Nerd Font to rended in your terminal)
     case $icon in
+    search)
+      echo -n 
+      ;;
+    lock)
+      echo -n 
+      ;;
+    cpu)
+      echo -n 
+      ;;
+    network)
+      echo -n 
+      ;;
+    code)
+      echo -n 
+      ;;
+    studies)
+      echo -n 
+      ;;
     git)
-      echo -n $ICON_GIT
+      echo -n 
       ;;
     github)
-      echo -n $ICON_GITHUB
+      echo -n 
       ;;
     gitlab)
-      echo -n $ICON_GITLAB
+      echo -n 
       ;;
     branch)
-      echo -n $ICON_BRANCH
+      echo -n 
       ;;
     home)
-      echo -n $ICON_HOME
+      echo -n 
       ;;
     config)
-      echo -n $ICON_CONFIG
+      echo -n 
       ;;
     database)
-      echo -n $ICON_DATABASE
+      echo -n 
       ;;
     log)
-      echo -n $ICON_LOG
+      echo -n 󱂅
+      ;;
+    folder)
+      echo -n 
       ;;
     open_folder)
-      echo -n $ICON_OPEN_fOLDER
+      echo -n 
       ;;
     python)
-      echo -n $ICON_PYTHON
+      echo -n 
       ;;
     dialog)
-      echo -n $ICON_DIALOG
+      echo -n 
       ;;
     left_half_circle)
-      echo -n $ICON_LEFT_HALF_CIRCLE
+      echo -n 
       ;;
     right_half_circle)
-      echo -n $ICON_RIGHT_HALF_CIRCLE
+      echo -n 
       ;;
     warning)
-      echo -n $ICON_WARNING
+      echo -n 
       ;;
     clock)
-      echo -n $ICON_CLOCK
+      echo -n 󰅐
+      ;;
+    lower_left_triangle)
+      echo -n 
+      ;;
+    lower_right_triangle)
+      echo -n 
+      ;;
+    upper_left_triangle)
+      echo -n 
+      ;;
+    upper_right_triangle)
+      echo -n 
+      ;;
+    left_soft_divider)
+      echo -n 
+      ;;
+    right_soft_divider)
+      echo -n 
+      ;;
+    left_hard_divider)
+      echo -n 
+      ;;
+    right_hard_divider)
+      echo -n 
+      ;;
+    left_hard_divider_inversed)
+      echo -n 
+      ;;
+    right_hard_divider_inversed)
+      echo -n 
       ;;
    esac
   }
@@ -294,19 +345,19 @@ prompt_git() {
   this_font_color=$(font_color $GIT_FG_COLOR)
 
   this_icon='git'
-  this_icon_color=$(font_color $RED)
+  this_icon_color=$(font_color $ICON_GIT_COLOR)
 
   # git@github.com:odraghi/tools.git
   origin=$(git remote get-url origin 2>/dev/null)
 
   echo $origin | grep -q "github.com:" && {
     this_icon='github'
-    this_icon_color=$(font_color $BLUE)
+    this_icon_color=$(font_color $ICON_GITHUB_COLOR)
   }
 
   echo $origin | grep -q "gitlab" && {
     this_icon='gitlab'
-    this_icon_color=$(font_color $ORANGE)
+    this_icon_color=$(font_color $ICON_GITLAB_COLOR)
   }
   this_placeholder=$this_icon
   echo -e "${this_background_color}\c"
@@ -349,7 +400,7 @@ prompt_clock() {
   message="$(font_icon clock) ${prompt_time@P}"
   prompt_message_wrapped_in "none" \
                             $CLOCK_FG_COLOR $CLOCK_BG_COLOR \
-                            "$message"
+                            "$message" \
                             $CLOCK_BEGIN_BG_COLOR $CLOCK_END_BG_COLOR
 }
 
@@ -378,6 +429,7 @@ prompt_plugins() {
   is_prompt_prompt_plugins_disabled && return
   [ $TERM != 'xterm-256color' ] && disable_prompt_icons && disable_prompt_plugins_color
   prompt_venv_ps1_remove # Must be the first
+  echo
   prompt_begin_context_bar
   prompt_clock
   prompt_separator_context_bar
