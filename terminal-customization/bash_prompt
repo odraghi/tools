@@ -46,6 +46,7 @@ VENV_DECORATOR=bubble
 
 GIT_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 GIT_FG_COLOR=$WHITE
+GIT_PENDING_CHANGE_COLOR=$BLUE
 ICON_GIT_COLOR=$BROWN
 ICON_GITHUB_COLOR=$BLUE
 ICON_GITLAB_COLOR=$ORANGE
@@ -359,6 +360,42 @@ font_icon() {
     right_hard_divider_inversed)
       echo -n 
       ;;
+    alpha_o_circle)
+      echo -n 󰲞
+      ;;
+    numeric_1_circle)
+      echo -n 󰲠
+      ;;
+    numeric_2_circle)
+      echo -n 󰲢
+      ;;
+    numeric_3_circle)
+      echo -n 󰲤
+      ;;
+    numeric_4_circle)
+      echo -n 󰲦
+      ;;
+    numeric_5_circle)
+      echo -n 󰲨
+      ;;
+    numeric_6_circle)
+      echo -n 󰲪
+      ;;
+    numeric_7_circle)
+      echo -n 󰲬
+      ;;
+    numeric_8_circle)
+      echo -n 󰲮
+      ;;
+    numeric_9_circle)
+      echo -n 󰲰
+      ;;
+    numeric_9_plus_circle)
+      echo -n 󰲲
+      ;;
+    numeric_1_circle)
+      echo -n 󰲠
+      ;;
    esac
   }
 }
@@ -392,9 +429,15 @@ prompt_git() {
     this_icon_color=$(font_color $ICON_GITLAB_COLOR)
   }
   this_placeholder=$this_icon
+
+  status_count=$(git status --porcelain 2> /dev/null| wc -l)
+  [ -z $status_count ] && pending_change='' || {
+    [ $status_count -gt 9 ] && status_count="9_plus"
+    pending_change=" $(font_color $GIT_PENDING_CHANGE_COLOR)$(font_icon numeric_${status_count}_circle)${this_font_color} "
+  }
   echo -e "${this_background_color}\c"
   echo -e "${this_icon_color}$(font_icon $this_icon $this_placeholder)\c"
-  echo -e "${this_background_color}${this_font_color}  $(font_icon 'branch' 'branch:') ${current_branch}$(font_reset)\c"
+  echo -e "${this_background_color}${this_font_color}  $(font_icon 'branch')${pending_change} ${current_branch}$(font_reset)\c"
 }
 
 prompt_venv_ps1_remove() {
