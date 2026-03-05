@@ -15,6 +15,7 @@ export VIRTUAL_ENV_DISABLE_PROMPT=yes
 ## Color code for 'tput'
 COLOR_DEFAULT=256
 COLOR_BLUE_24=24
+COLOR_BLUE_27=27
 COLOR_BLUE_39=39
 COLOR_BROWN_137=137
 COLOR_GREEN_70=70
@@ -49,7 +50,7 @@ VENV_DECORATOR=bubble
 
 GIT_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 GIT_FG_COLOR=$COLOR_WHITE_231
-GIT_PENDING_CHANGE_COLOR=$COLOR_BLUE_39
+GIT_PENDING_CHANGE_COLOR=$COLOR_BLUE_27
 ICON_GIT_COLOR=$COLOR_BROWN_137
 ICON_GITHUB_COLOR=$COLOR_BLUE_39
 ICON_GITLAB_COLOR=$COLOR_ORANGE_202
@@ -232,6 +233,21 @@ prompt_message_wrapped_in() {
     echo -e "$(font_reset)\c"
 }
 
+tput_rainbow_font_for_background_color() {
+  bg_color=${1:-236} # Default white
+  nb_of_message_per_line=3
+  count_message=0
+  for FOREGROUND in {1..256} ; do
+    ((count_message++))
+    border_color="$(font_reset)$(font_color $bg_color)$(font_background_color $COLOR_DEFAULT)" 
+    message="$(font_color $FOREGROUND)$(font_icon home)  $(font_icon numeric_1_circle)  $FOREGROUND - background $bg_color"
+    echo -e "${border_color}$(font_color $bg_color)$(font_background_color $bg_color) $message ${border_color}$(font_reset)   \c"
+    [ $count_message -eq $nb_of_message_per_line ] && count_message=0 && echo -e "\n"
+  done
+  echo
+}
+
+
 tput_rainbow_background_for_font_color() {
   fg_color=${1:-231} # Default white
   nb_of_message_per_line=3
@@ -239,7 +255,8 @@ tput_rainbow_background_for_font_color() {
   for BACK in {1..256} ; do
     ((count_message++))
     border_color="$(font_reset)$(font_color $BACK)$(font_background_color $COLOR_DEFAULT)" 
-    echo -e "${border_color}$(font_color $fg_color)$(font_background_color $BACK)   font $fg_color - background $BACK ${border_color}$(font_reset)   \c"
+    message="$(font_icon home)  $(font_icon numeric_1_circle)  $fg_color - background $BACK"
+    echo -e "${border_color}$(font_color $fg_color)$(font_background_color $BACK) $message ${border_color}$(font_reset)   \c"
     [ $count_message -eq $nb_of_message_per_line ] && count_message=0 && echo -e "\n"
   done
   echo
