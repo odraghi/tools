@@ -433,7 +433,7 @@ prompt_git() {
   status_count=$(git status --porcelain 2> /dev/null| wc -l)
   [ -z $status_count ] && pending_change='' || {
     [ $status_count -gt 9 ] && status_count="9_plus"
-    pending_change=" $(font_color $GIT_PENDING_CHANGE_COLOR)$(font_icon numeric_${status_count}_circle)${this_font_color} "
+    pending_change=" $(font_color $GIT_PENDING_CHANGE_COLOR)$(font_icon numeric_${status_count}_circle ${status_count} )${this_font_color} "
   }
   echo -e "${this_background_color}\c"
   echo -e "${this_icon_color}$(font_icon $this_icon $this_placeholder)\c"
