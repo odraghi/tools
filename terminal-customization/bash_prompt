@@ -1,7 +1,7 @@
-#!/usr/bin/env bash
+COLOR_DEFAULT#!/usr/bin/env bash
 
 ## Config
-WARN_SIZE_PCENT=80
+WARN_FILESYSTEM_SIZE_PCENT=80
 
 ## Need to disable python venv activate modificaion of the prompt.
 export VIRTUAL_ENV_DISABLE_PROMPT=yes
@@ -13,20 +13,23 @@ export VIRTUAL_ENV_DISABLE_PROMPT=yes
 #export PROMPT_ICONS_ENABLED=no
 
 ## Color code for 'tput'
-#RED=9
-RED=196
-ORANGE=202
-BLUE=39
-BROWN=137
-GREEN=70
-WHITE=231
-DEFAULT=256
+COLOR_DEFAULT=256
+COLOR_BLUE_24=24
+COLOR_BLUE_39=39
+COLOR_BROWN_137=137
+COLOR_GREEN_70=70
+COLOR_ORANGE_202=202
+COLOR_PURPLE_60=60
+COLOR_RED_9=9
+COLOR_RED_196=196
+COLOR_WHITE_231=231
+COLOR_GREY_236=236
+############
 
-CONTEXT_BAR_BG_COLOR=236
+CONTEXT_BAR_BG_COLOR=$COLOR_GREY_236
 
-#CLOCK_BEGIN_BG_COLOR=$DEFAULT
 CLOCK_BEGIN_BG_COLOR=$CONTEXT_BAR_BG_COLOR
-CLOCK_FG_COLOR=60
+CLOCK_FG_COLOR=$COLOR_PURPLE_60
 CLOCK_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 CLOCK_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 
@@ -45,15 +48,15 @@ CLOCK_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 VENV_DECORATOR=bubble
 
 GIT_BG_COLOR=$CONTEXT_BAR_BG_COLOR
-GIT_FG_COLOR=$WHITE
-GIT_PENDING_CHANGE_COLOR=$BLUE
-ICON_GIT_COLOR=$BROWN
-ICON_GITHUB_COLOR=$BLUE
-ICON_GITLAB_COLOR=$ORANGE
+GIT_FG_COLOR=$COLOR_WHITE_231
+GIT_PENDING_CHANGE_COLOR=$COLOR_BLUE_39
+ICON_GIT_COLOR=$COLOR_BROWN_137
+ICON_GITHUB_COLOR=$COLOR_BLUE_39
+ICON_GITLAB_COLOR=$COLOR_ORANGE_202
 
 PYTHON_BEGIN_FG_COLOR=$CONTEXT_BAR_BG_COLOR
-PYTHON_BG_COLOR=24
-PYTHON_FG_COLOR=$WHITE
+PYTHON_BG_COLOR=$COLOR_BLUE_24
+PYTHON_FG_COLOR=$COLOR_WHITE_231
 PYTHON_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 
 # To avoid counting some char (and tput) in de prompt 
@@ -140,7 +143,7 @@ font_background_color() {
 }
 
 font_warning() {
-  font_color $RED
+  font_color $COLOR_RED_196
   tput_safe_zero_width bold
 }
 
@@ -235,7 +238,7 @@ tput_rainbow_background_for_font_color() {
   count_message=0
   for BACK in {1..256} ; do
     ((count_message++))
-    border_color="$(font_reset)$(font_color $BACK)$(font_background_color $DEFAULT)" 
+    border_color="$(font_reset)$(font_color $BACK)$(font_background_color $COLOR_DEFAULT)" 
     echo -e "${border_color}$(font_color $fg_color)$(font_background_color $BACK)   font $fg_color - background $BACK ${border_color}$(font_reset)   \c"
     [ $count_message -eq $nb_of_message_per_line ] && count_message=0 && echo -e "\n"
   done
@@ -245,13 +248,13 @@ tput_rainbow_background_for_font_color() {
 
 prompt_warning_size() {
   is_prompt_warning_size_disabled  && return
-  WARN_SIZE_PCENT=${WARN_SIZE_PCENT:-80}
+  WARN_FILESYSTEM_SIZE_PCENT=${WARN_FILESYSTEM_SIZE_PCENT:-80}
   size_pcent_used=$(df --output=pcent . | tail -1 | tr -d '[:space:]%')
-  [ $size_pcent_used -lt $WARN_SIZE_PCENT ] && return # Size is OK
+  [ $size_pcent_used -lt $WARN_FILESYSTEM_SIZE_PCENT ] && return # Size is OK
   size_available=$(df -h --output=avail . | tail -1 | tr -d '[:space:]')
   this_filesystem=$(df --output=target . | tail -1 | tr -d '[:space:]')
   message="$(font_icon warning WARNING) Filesystem ${this_filesystem} ${size_available} free"
-  prompt_message_wrapped_in "bubble" $DEFAULT $RED "$message"
+  prompt_message_wrapped_in "bubble" $COLOR_DEFAULT $COLOR_RED_196 "$message"
 }
 
 font_icon() {
@@ -497,7 +500,7 @@ prompt_venv_decorator_circle_left() {
 prompt_directory_icon() {
   this_icon=$1
   # Notice that we call font_icon with only 1 arg. (no placeholder)
-  echo "$(font_color $DEFAULT)$(font_icon $this_icon)$(prompt_final_spacer)"
+  echo "$(font_color $COLOR_DEFAULT)$(font_icon $this_icon)$(prompt_final_spacer)"
 }
 
 prompt_directory() {
@@ -528,14 +531,14 @@ prompt_begin_context_bar() {
   prompt_message_wrapped_in "bubble" \
                             $CONTEXT_BAR_BG_COLOR $CONTEXT_BAR_BG_COLOR \
                             "" \
-                            $DEFAULT $CONTEXT_BAR_BG_COLOR
+                            $COLOR_DEFAULT $CONTEXT_BAR_BG_COLOR
 }
 
 prompt_end_context_bar() {
   prompt_message_wrapped_in "bubble" \
                             $CONTEXT_BAR_BG_COLOR $CONTEXT_BAR_BG_COLOR \
                             "" \
-                            $CONTEXT_BAR_BG_COLOR $DEFAULT
+                            $CONTEXT_BAR_BG_COLOR $COLOR_DEFAULT
 }
 
 prompt_plugins() {
@@ -548,7 +551,7 @@ prompt_plugins() {
   prompt_separator_context_bar
   prompt_venv_info && prompt_separator_context_bar
   prompt_git
-  #prompt_message_wrapped_in "bubble" $DEFAULT $RED "$(font_icon dialog) Hello la famille ca va chez vous ?"
+  #prompt_message_wrapped_in "bubble" $COLOR_DEFAULT $COLOR_RED_196 "$(font_icon dialog) Hello la famille ca va chez vous ?"
   prompt_end_context_bar
   prompt_warning_size
   echo
