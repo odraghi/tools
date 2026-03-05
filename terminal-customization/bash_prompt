@@ -3,6 +3,9 @@ COLOR_DEFAULT#!/usr/bin/env bash
 ## Config
 WARN_FILESYSTEM_SIZE_PCENT=80
 
+# PROMPT_CLOCK_MODE: datetime, time (default
+PROMPT_CLOCK_MODE=datetime
+
 ## Need to disable python venv activate modificaion of the prompt.
 export VIRTUAL_ENV_DISABLE_PROMPT=yes
 
@@ -14,9 +17,12 @@ export VIRTUAL_ENV_DISABLE_PROMPT=yes
 
 ## Color code for 'tput'
 COLOR_DEFAULT=256
+COLOR_BLUE_14=14
 COLOR_BLUE_24=24
 COLOR_BLUE_27=27
+COLOR_BLUE_29=29
 COLOR_BLUE_39=39
+COLOR_BLUE_69=69
 COLOR_BROWN_137=137
 COLOR_GREEN_70=70
 COLOR_ORANGE_202=202
@@ -50,9 +56,9 @@ VENV_DECORATOR=bubble
 
 GIT_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 GIT_FG_COLOR=$COLOR_WHITE_231
-GIT_PENDING_CHANGE_COLOR=$COLOR_BLUE_27
+GIT_PENDING_CHANGE_COLOR=$COLOR_BLUE_39
 ICON_GIT_COLOR=$COLOR_BROWN_137
-ICON_GITHUB_COLOR=$COLOR_BLUE_39
+ICON_GITHUB_COLOR=$COLOR_BLUE_14
 ICON_GITLAB_COLOR=$COLOR_ORANGE_202
 
 PYTHON_BEGIN_FG_COLOR=$CONTEXT_BAR_BG_COLOR
@@ -240,7 +246,7 @@ tput_rainbow_font_for_background_color() {
   for FOREGROUND in {1..256} ; do
     ((count_message++))
     border_color="$(font_reset)$(font_color $bg_color)$(font_background_color $COLOR_DEFAULT)" 
-    message="$(font_color $FOREGROUND)$(font_icon home)  $(font_icon numeric_1_circle)  $FOREGROUND - background $bg_color"
+    message="$(font_color $FOREGROUND)$(font_icon home)  $(font_icon github)  $(font_icon numeric_1_circle)  $FOREGROUND - background $bg_color"
     echo -e "${border_color}$(font_color $bg_color)$(font_background_color $bg_color) $message ${border_color}$(font_reset)   \c"
     [ $count_message -eq $nb_of_message_per_line ] && count_message=0 && echo -e "\n"
   done
@@ -529,8 +535,21 @@ prompt_directory() {
 }
 
 prompt_clock() {
-  prompt_time='\A'
-  message="$(font_icon clock) ${prompt_time@P}"
+  PROMPT_CLOCK_MODE=${PROMPT_CLOCK_MODE:-time}
+  case $PROMPT_CLOCK_MODE in
+  time)
+    prompt_time='\A'
+    message="$(font_icon clock) ${prompt_time@P}"
+    ;;
+  datetime)
+    prompt_datetime='\D{%a %-d %B} \A'
+    message="${prompt_datetime@P}"
+    ;;
+  *)
+    return
+    ;;
+  esac 
+
   prompt_message_wrapped_in "none" \
                             $CLOCK_FG_COLOR $CLOCK_BG_COLOR \
                             "$message" \
