@@ -141,34 +141,34 @@ is_not_ps1_colored() {
 # This avoid command line behavior issue cause be PS1 prompt
 # As PS1 eval already pass we need to tell bash to interpret your barcket.
 # We do that with a var opperator @P that expanding the value for prompting
-tput_safe_zero_width() {
+safe_zero_width_call() {
   BASH_ESCAPE_SPACE_BEGIN="\["
   BASH_ESCAPE_SPACE_END="\]"
-  echo "${BASH_ESCAPE_SPACE_BEGIN@P}$( tput $@ )${BASH_ESCAPE_SPACE_END@P}"
+  echo "${BASH_ESCAPE_SPACE_BEGIN@P}$( $@ )${BASH_ESCAPE_SPACE_END@P}"
 }
 
 font_color() {
   is_not_ps1_colored && return 
   is_prompt_prompt_plugins_color_disabled && return 
   COLOR_CODE=$1
-  tput_safe_zero_width setaf $COLOR_CODE
+  safe_zero_width_call tput setaf $COLOR_CODE
 }
 
 font_background_color() {
   is_not_ps1_colored && return 
   is_prompt_prompt_plugins_color_disabled && return 
   COLOR_CODE=$1
-  tput_safe_zero_width setab $COLOR_CODE
+  safe_zero_width_call tput setab $COLOR_CODE
 }
 
 font_warning() {
   font_color $COLOR_RED_196
-  tput_safe_zero_width bold
+  safe_zero_width_call tput bold
 }
 
 font_reset() {
   #tput sgr0
-  tput_safe_zero_width sgr0
+  safe_zero_width_call tput sgr0
 }
 
 tput_rainbow() {
@@ -441,7 +441,7 @@ prompt_final_spacer() {
   last_spacer_with_icon='  '
   is_prompt_prompt_plugins_color_disabled || echo -n "$(font_reset)"
   is_prompt_icons_disabled || echo -n "$last_spacer_with_icon"
-  is_prompt_prompt_plugins_color_disabled && is_prompt_icons_disabled && echo -e "\r"
+  is_prompt_prompt_plugins_color_disabled && is_prompt_icons_disabled && safe_zero_width_call echo -e "\r"
 }
 
 prompt_git() {
@@ -594,7 +594,7 @@ prompt_plugins() {
   #prompt_message_wrapped_in "bubble" $COLOR_DEFAULT $COLOR_RED_196 "$(font_icon dialog) Hello la famille ca va chez vous ?"
   prompt_end_context_bar
   prompt_warning_size
-  echo -e "\r"
+  safe_zero_width_call echo -e "\r"
   prompt_directory 
   prompt_final_spacer
 }
