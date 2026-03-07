@@ -69,7 +69,6 @@ ICON_GITLAB_COLOR=$COLOR_ORANGE_202
 PYTHON_BEGIN_FG_COLOR=$CONTEXT_BAR_BG_COLOR
 PYTHON_BG_COLOR=$COLOR_BLUE_24
 PYTHON_FG_COLOR=$COLOR_WHITE_231
-PYTHON_END_BG_COLOR=$CONTEXT_BAR_BG_COLOR
 
 ## Mandatory: This tell python venv that we don't want that 'bin/activate' modify the prompt PS1 
 export VIRTUAL_ENV_DISABLE_PROMPT=yes
@@ -188,7 +187,6 @@ prompt_message_wrapped_in() {
   begin_bg_color=${5:-256}
   end_bg_color=${6:-256}
 
-
   case $decorator in
   pointer_in)
     icon_begin="left_hard_divider_inversed"
@@ -216,11 +214,13 @@ prompt_message_wrapped_in() {
     ;;
   circle_right)
     icon_begin="full_block"
+    icon_begin=" "
     icon_end="right_half_circle"
     ;;
   circle_left)
     icon_begin="left_half_circle"
     icon_end="full_block"
+    icon_end=" "
     ;;
   bubble)
     icon_begin="left_half_circle"
@@ -298,6 +298,9 @@ font_icon() {
 
    ## Font icons (Need Nerd Font to rended in your terminal)
     case $icon in
+    ' ')
+      echo -n ' ' # This one is not an icon but it's very useful..
+      ;;
     search)
       echo -n 
       ;;
@@ -450,6 +453,7 @@ prompt_git() {
 
   this_background_color=$(font_background_color $GIT_BG_COLOR)
   this_font_color=$(font_color $GIT_FG_COLOR)
+  this_prompt_colors="${this_background_color}${this_font_color}"
 
   this_icon='git'
   this_icon_color=$(font_color $ICON_GIT_COLOR)
@@ -473,9 +477,12 @@ prompt_git() {
     [ $status_count -gt 9 ] && status_count="9_plus"
     pending_change=" $(font_color $GIT_PENDING_CHANGE_COLOR)$(font_icon numeric_${status_count}_circle pending:${status_count})${this_font_color} "
   }
-  echo -e "${this_background_color}\c"
-  echo -e "${this_icon_color}$(font_icon $this_icon $this_placeholder)\c"
-  echo -e "${this_background_color}${this_font_color}  $(font_icon 'branch')${pending_change} ${current_branch}$(font_reset)\c"
+  this_icon_git_render=" ${this_icon_color}$(font_icon $this_icon $this_placeholder)"
+  message="${this_icon_git_render}${this_prompt_colors}  $(font_icon 'branch')${pending_change} ${current_branch}"
+  prompt_message_wrapped_in "circle_right" \
+                            $GIT_FG_COLOR $GIT_BG_COLOR \
+                            "$message" \
+                            $CONTEXT_BAR_BG_COLOR $COLOR_DEFAULT
 }
 
 prompt_venv_info() {
@@ -483,10 +490,12 @@ prompt_venv_info() {
   this_icon='python'
   this_placeholder='python:'
   this_decorator=${VENV_DECORATOR:-bubble}
+  this_end_bg_color=$COLOR_DEFAULT
+  git branch --show-current &>/dev/null && this_end_bg_color=$CONTEXT_BAR_BG_COLOR
   prompt_message_wrapped_in $this_decorator \
                             $PYTHON_FG_COLOR $PYTHON_BG_COLOR \
-                            "$(font_icon $this_icon $this_placeholder ) $(basename $VIRTUAL_ENV)" \
-                            $PYTHON_BEGIN_FG_COLOR $PYTHON_END_BG_COLOR
+                            "$(font_icon $this_icon $this_placeholder) $(basename $VIRTUAL_ENV)" \
+                            $PYTHON_BEGIN_FG_COLOR $this_end_bg_color
 }
 
 prompt_venv_decorator_bubble() {
@@ -569,14 +578,14 @@ prompt_separator_context_bar() {
 }
 
 prompt_begin_context_bar() {
-  prompt_message_wrapped_in "bubble" \
+  prompt_message_wrapped_in "circle_left" \
                             $CONTEXT_BAR_BG_COLOR $CONTEXT_BAR_BG_COLOR \
                             "" \
                             $COLOR_DEFAULT $CONTEXT_BAR_BG_COLOR
 }
 
 prompt_end_context_bar() {
-  prompt_message_wrapped_in "bubble" \
+  prompt_message_wrapped_in "circle_right" \
                             $CONTEXT_BAR_BG_COLOR $CONTEXT_BAR_BG_COLOR \
                             "" \
                             $CONTEXT_BAR_BG_COLOR $COLOR_DEFAULT
@@ -589,10 +598,14 @@ prompt_plugins() {
   prompt_begin_context_bar
   prompt_clock
   prompt_separator_context_bar
-  prompt_venv_info && prompt_separator_context_bar
+  prompt_venv_info
+  is_venv_active=$?
+
   prompt_git
-  #prompt_message_wrapped_in "bubble" $COLOR_DEFAULT $COLOR_RED_196 "$(font_icon dialog) Hello la famille ca va chez vous ?"
-  prompt_end_context_bar
+  is_in_a_git_directory=$?
+
+  [ $is_venv_active -ne 0 ] && [ $is_in_a_git_directory -ne 0 ]  && prompt_end_context_bar
+
   prompt_warning_size
   safe_zero_width_call echo -e "\r"
   prompt_directory 
