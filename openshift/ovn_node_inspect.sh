@@ -82,12 +82,24 @@ EOF
 
 NODES=$(oc get node -o jsonpath="{range .items[*]} {.metadata.name}")
 
-echo "Nodes:"
-for NODE in $NODES; do echo " $NODE" ; done
 
-echo
-read -p "  Connect in OVN North DB on node (ex: $NODE): " NODE
+## Search a corresponding node
+ARG_NODE=$1
+if [ -n $ARG_NODE ]; then
+  for NODE in $NODES; do
+    echo "$NODE" | grep -q $ARG_NODE && SELECTED_NODE=$NODE
+  done
+fi
 
-echo -e "\nConnecting on $NODE ..\n"
-POD_NAME=$(oc get pod -n openshift-ovn-kubernetes --field-selector spec.nodeName=$NODE -l app=ovnkube-node -o jsonpath='{.items[0].metadata.name}')
+if [ -z $SELECTED_NODE ] ; then
+  echo "Nodes:"
+  for NODE in $NODES; do
+    echo " $NODE"
+  done
+ echo
+ read -p "  Connect in OVN North DB on node (ex: $NODE): " SELECTED_NODE
+fi
+
+echo -e "\nConnecting on $SELECTED_NODE ..\n"
+POD_NAME=$(oc get pod -n openshift-ovn-kubernetes --field-selector spec.nodeName=$SELECTED_NODE -l app=ovnkube-node -o jsonpath='{.items[0].metadata.name}')
 oc exec -it pod/$POD_NAME -n openshift-ovn-kubernetes -c nbdb -- /bin/bash
