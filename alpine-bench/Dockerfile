@@ -21,3 +21,5 @@ RUN apk add iotop iotop-doc
 RUN apk add sysstat sysstat-doc
 
 RUN rm -rf /var/cache/apk/*
+USER alpine
+ENTRYPOINT ["/bin/bash", "-c", "sleep 60m"]
